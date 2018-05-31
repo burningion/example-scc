@@ -57,3 +57,23 @@ It appears this is related to [line 90](https://github.com/DataDog/datadog-agent
 
 Looking at the [OpenShift Origin Specific Guidelines](https://docs.openshift.org/latest/creating_images/guidelines.html#openshift-specific-guidelines), it seems we wouldn't have the permissions to do this in the first place, and instead we'll need to follow the instructions for random UIDs there.
 
+## Workaround
+
+I got the Agent to still work and get all access by changing the `SecurityContextConstraints` part of my YAML to run as `root`.
+
+You can do this too by changing the lines for `runAsUser type: MustRunAsRange` to `runAsUser type: RunAsAny`.
+
+You may need to delete and recreate the daemonset to see your changes applied:
+
+```
+$./oc apply -f create-roles.yaml
+$./oc delete daemonset datadog-agent
+$./oc apply -f create-agent.yaml
+```
+
+With this, you can then login to your pod and see that you are no longer `I have no username!` and are now `root`:
+
+```
+$./oc get pods
+$./oc exec <AGENTNAME> -it bash
+```
